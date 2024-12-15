@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "start": "tsc-watch --onSuccess \"node ./build/index.js\""
+    "generate": "tsc && node ./build/index.js",
+    "watch": "tsc-watch --onSuccess \"node ./build/index.js\""
   },
   "author": "WiggelMc",
   "license": "MIT",
