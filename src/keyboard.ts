@@ -1,5 +1,6 @@
-import { polyhedron, ScadMethods, union } from "scad-ts";
-import { ScadSerializeMethod, Serializable } from "scad-ts/dist/util/Serializable";
+import { polyhedron, ScadMethods, union, vector3 } from "scad-ts";
+import { Serializable } from "scad-ts/dist/util/Serializable.js";
+import { Vector3 } from "./math/vector3.js";
 
 
 export type Output = "VIEW" | "INTERNAL" | "PRINT"
