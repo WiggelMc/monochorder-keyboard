@@ -1,27 +1,33 @@
-import * as fs from "fs"
-import * as Path from "path"
-import { generate, Output } from "./keyboard.js"
+import { generateFile } from "./file/generate.js"
 
 
+generateFile("view", {
+    printCut: false,
+    showHull: true,
+    showPoints: true,
+    showComponents: true
+})
 
-const OUT_DIR_NAME = "out"
+generateFile("view-raw", {
+    printCut: false,
+    showHull: true,
+    showPoints: false,
+    showComponents: false
+})
 
-const outDirPath = Path.join(import.meta.dirname, "..", OUT_DIR_NAME)
+generateFile("internal", {
+    printCut: false,
+    showHull: false,
+    showPoints: true,
+    showComponents: true
+})
 
+generateFile("print", {
+    printCut: true,
+    showHull: true,
+    showPoints: false,
+    showComponents: false
+})
 
-fs.mkdirSync(outDirPath, { recursive: true })
-
-function generateFile(outputType: Output, filename: string) {
-    const obj = generate(outputType)
-
-    fs.writeFileSync(
-        Path.join(outDirPath, filename),
-        obj.serialize({$fn: 50})
-    )
-}
-
-generateFile("VIEW", "view.scad")
-generateFile("PRINT", "print.scad")
-generateFile("INTERNAL", "internal.scad")
 
 console.log("Successfully generated Model Files")
