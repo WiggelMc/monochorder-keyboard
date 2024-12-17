@@ -91,6 +91,10 @@ export class Vector3 {
         return Vector3.fromTo(a,b).sqrMagnitude()
     }
 
+    static lerp(a: Vector3, b: Vector3, t: number): Vector3 {
+        return a.add(Vector3.fromTo(a,b).scale(t))
+    }
+
     static readonly zero = new Vector3(0,0,0)
     static readonly one = new Vector3(1,1,1)
 }
