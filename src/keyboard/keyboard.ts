@@ -36,5 +36,12 @@ export function generate(config: GenerationConfig): string {
         )
     )
 
+
+    // Define Belt (fingers, reset, io_plate)
+    // Define Parameters for connection
+    //  - smoothness: distance of bezier control points (in mm) [maybe different ones for belt and others]
+    //  - resolution: distance of used bezier points (in mm)
+    //  - thickness: thickness of hull (in mm)
+    
     return obj.serialize({$fn: 50})
 }
