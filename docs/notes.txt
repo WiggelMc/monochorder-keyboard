@@ -1,0 +1,267 @@
+
+keyboard params:
+
+hand
+. measurements
+. neutral position
+. comfortable ranges (forward backward down)
+mounting hole position
+
+
+
+
+
+
+Options:
+	Mouse Speed (??)
+
+Codes:
+	Buttons:
+		0, Shift
+		1, Ctrl
+		2, Alt
+		3
+		4
+		5
+		6
+		7
+		8
+		9, Cancel
+		R1, Reset (Only used for reset, not for any typing, because it is not in the resting position)
+		R2, Reset (Only used for reset)
+
+	([Shift, Ctrl, Alt] are Physical Keys, Ignored for Code, Next Input might still use them)
+	[Code is 128 Size] {3-9}
+	To Enter Zero into a function, Use Key 9 and another Key (specific combo defined in Keymap)
+	
+	[FLAGS]:
+		(
+			Value: Enum(byte)
+			Locked: 0 | 1
+		)
+		[Normal]:
+			Hold: NONE | HOLD | RELEASE | HOLD_ONCE
+			Layer: 0..256
+			Modifier: F*8 (Ctrl,Shift,Alt,Meta,RCtrl,RShift,RAlt,RMeta)
+			Function_Lock: 0 | 1
+		[Flag]:
+			Flag_Lock: 0 | 1
+			
+	[Structure]:
+		[Input]:
+			if Layer:
+				Use different Key
+			if Modifier:
+				Add Modifiers
+			if Hold:
+				Modify Hold List
+				
+			Write Input
+			Try Reset All Flags
+		[Function]:
+			Code:
+				can Read Next (If input invalid, do nothing and continue function normally after the Code)
+				can Write Input
+			
+			If Function_Lock:
+				Jump to Beginning of Function
+			
+			[After Execution (in Handler)]:
+				if Function was cancelled:
+					Reset All Flags
+				else:
+					Try Reset All Flags
+			
+			[Read Next]:
+				if Code is Cancel:
+					Return Exit
+				else:
+					Return Result
+		[Flag]:
+			Set Flag
+			if Flag_Lock:
+				Set Lock on Flag
+			
+			Try Reset Flags for [Flag]
+		
+	
+	
+	General:
+		...Keys (a-z, Shift, Enter, F1-F12, ...) [Keys get 80 Places in Main Layer, 127 in Other Layer (= 207)] (Other Codes get 48 Places)
+		Set Option (Option, Value Next) {0-8}*2
+		Cancel
+		Repeat Last Press
+		Repeat Last Input Result
+	Layer:
+		Meta (Fl: [Input])
+		Other Keys (Fl: [Input], use alternative Key) {3-9}
+	Hold:
+		Hold (Fl: [Input])
+		Release (Fl: [Input])
+		Release All
+		Hold Once (Fl: [Input], Auto Release after next Key released)
+		Function Lock (Fl: [Function], reactivate Function after end... until Cancel)
+		Flag Lock (Fl: [Flag], stop Flag from being reset on use... until Cancel)
+	Special:
+		Enter Special Mode (Mode Next) {3-9}
+		Byte Hex (Fn: Byte Next) {Shift|1-8}
+		Byte Bin (Fn: Byte Next) {Shift|1-8}
+		Byte Oct (Fn: Byte Next) {Shift|1-8}
+		Byte Dec (Fn: Byte Next) {Shift|1-8}
+	Mouse [needs OS]:
+		Set (Fn: Read XPos, YPos Next) {0-8}*2
+		SetX (Fn: Read XPos Next) {0-8}
+		SetY (Fn: Read YPos Next) {0-8}
+		SetScreen (Fn: Read Screen Next) {0-8}
+		Scroll Up (Fn: Read Distance Next) {0-8}
+		Scroll Down (Fn: Read Distance Next) {0-8}
+		Left Click
+		Right Click
+		Middle Click
+		
+
+Driver:
+	Installation:
+		sudo pacman -S --needed ????
+		git clone ...
+		cd absmouse
+		makepkg -si
+		
+		?? maybe enable uinput (systemctl / modprobe)
+		systemctl enable --now absmouse.service
+		
+	Include C Files in Repo:
+		Lib for packet construction (can be used in QMK) (parsing is done by file in src)
+		
+		lib/absmouse_protocol_constants.h
+		lib/absmouse_protocol_construction.h
+		lib/absmouse_protocol_construction.c
+	Packets:
+		MOUSE_SET_POS {x: uint16, y: uint16}
+		MOUSE_SET_POS_X {x: uint16}
+		MOUSE_SET_POS_Y {y: uint16}
+		MOUSE_SET_SCREEN {screen: uint16}
+		
+		MOUSE_WHEEL_UP {distance: uint16}
+		MOUSE_WHEEL_DOWN {distance: uint16}
+		
+		MOUSE_CLICK_PRESS {button: uint16}
+		MOUSE_CLICK_RELEASE {button: uint16}
+		
+	SubCommands:
+		driver 					: Start Driver (needs root) (checks if already running)
+		startsync <COMPOSITOR>	: Start Monitor Sync (COMPOSITOR: hyprland, sway, wlroots, x11)
+		autoconfig <COMPOSITOR>	: Add sync to compositor Config
+		
+	Services:
+		absmouse.service		: Start Driver
+		
+	Config ($XDG_CONFIG_HOME/absmouse/absmouse.conf):
+	
+		# Order of Screen Indexes [left,right,top,bottom,"<MONITOR_NAME>"] comma seperated in order of priority
+		# eg. "DP 1",left,top   gives "DP 1" the first index if it's connected and then goes from left to right, top to bottom
+		screen_order 			= left,top
+		
+		# Mouse Smoothing Time (in ms per Screen Width)
+		mouse_smoothing 		= 50
+		
+		# Maximum Time for a single Movement (in ms)
+		mouse_smoothing_max 	= 20
+		
+		# Curve used for Mouse Interpolation [linear,smooth]
+		mouse_smoothing_curve 	= smooth
+		
+		# Snap to target position, when Mouse Button is pressed
+		mouse_snap_on_press 	= true
+		
+		# Scroll Smoothing Time (in ms per 100 Rows)
+		scroll_smoothing 		= 100
+		
+		# Maximum Time for a single Scroll (in ms)
+		scroll_smoothing_max 	= 20
+		
+		# Curve used for Scroll Interpolation [linear,smooth]
+		scroll_smoothing_curve 	= smooth
+		
+		# Instantly complete Scroll, when Mouse Button is pressed
+		scroll_snap_on_press 	= false
+
+
+
+
+
+* can stack, passed as parameter into next Input (can be cancelled)
+
+Special Modes:
+	Direct Key Input Mode (Transfer Keys as Numbers from 0-9)
+	Classic Controller Mode (Dpad, 2 Face Buttons, L/R, Start/Select)
+
+
+
+
+the keys 64 should be contained in 128
+256 byte schould always be the same keys
+
+
+
+
+
+Input Phases:
+	Idle Phase:
+		Press: Enter Press Phase
+		Release: Do Nothing
+
+	Press Phase:
+		Press: Do Nothing
+		Release: Send Pressed Keys (Including the released key), Enter Idle Phase
+
+
+
+?????89 >> Control Codes (32)
+3456789 : Noop Override
+
+????--9 >> Control Codes (16)
+------9 : Cancel
+
+??????- >> Keys (64)
+------- : Neutral
+
+
+????7-9 >> Keys (16)
+
+
+
+
+
+
+
+Keys:
+
+a-z									(26)
+0-9									(10)
+öäüß								(4)
+^`+#-.,< 							(8)
+Backspace, Enter, Tab, Space, Esc	(4)
+Shift, Ctrl, Alt, Meta, AltGr		(5)
+Del, Ins							(2)
+Start, End, PgUp, PgDown			(4)
+Arrows								(4)
+F1-F12								(12)
+
+79
+
+
+PrintScn, Rol, Pause	(3)
+NumLock NumEnter		(2)
+Numpad /*-+,			(5)
+Numpad 0-9				(10)
+F13-F24					(12)
+RMeta, RShift, RCtrl		(3)
+Multimedia				(18)
+AppsKey					(1)
+
+
+54
+
+
+
