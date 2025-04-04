@@ -44,4 +44,21 @@ export function generate(config: GenerationConfig): string {
     //  - thickness: thickness of hull (in mm)
     
     return obj.serialize({$fn: 50})
+
+    /*
+    settings:
+        finger default:
+            distances
+        fingers:
+            position (3 pos)
+            distances (optional, overrides default)
+        distances
+        functions:
+            getPlatePos(options)
+            fillQuad(a, b, c, d)
+    
+        construct fingers
+        construct plate
+        connect parts manually
+    */
 }
