@@ -3,23 +3,34 @@ import { Vector3 } from "./vector3.js"
 export class Body {
     private pointMap: Map<string, number>
     private points: Vector3[]
+    private triangleSet: Set<string>
     private triangles: ([number, number, number])[]
 
     constructor() {
         this.pointMap = new Map()
         this.points = []
+        this.triangleSet = new Set()
         this.triangles = []
     }
 
     transform(f: (vector: Vector3) => Vector3) {
         const body = new Body()
-        const points = this.points.map(f)
 
-        body.points = points
-        for (const [i, point] of points.entries()) {
-            body.pointMap.set(point.toString(), i)
+        for (const [a, b, c] of this.getTriangleVectors()) {
+            body.addTriangle(f(a), f(b), f(c))
         }
-        body.triangles = this.getTriangles()
+
+        return body
+    }
+
+    copy() {
+        const body = new Body()
+
+        for (const [a, b, c] of this.getTriangleVectors()) {
+            body.addTriangle(a, b, c)
+        }
+
+        return body
     }
 
     private getPointIndex(vector: Vector3) {
@@ -38,10 +49,29 @@ export class Body {
     }
 
     addTriangle(a: Vector3, b: Vector3, c: Vector3) {
-        this.triangles.push([
-            this.getPointIndex(a),
-            this.getPointIndex(b),
-            this.getPointIndex(c)
+        if (!this.triangleSet.has([a, b, c].toString())) {
+
+            this.triangles.push([
+                this.getPointIndex(a),
+                this.getPointIndex(b),
+                this.getPointIndex(c)
+            ])
+
+            this.triangleSet.add([a, b, c].toString())
+        }
+    }
+
+    addBody(other: Body) {
+        for (const [a, b, c] of other.getTriangleVectors()) {
+            this.addTriangle(a, b, c)
+        }
+    }
+
+    getTriangleVectors(): [Vector3, Vector3, Vector3][] {
+        return this.triangles.map(t => [
+            this.points[t[0]] as Vector3,
+            this.points[t[1]] as Vector3,
+            this.points[t[2]] as Vector3
         ])
     }
 
@@ -49,7 +79,7 @@ export class Body {
         return [...this.points]
     }
 
-    getTriangles(): [number, number, number][] {
+    getTriangleConnections(): [number, number, number][] {
         return this.triangles.map(t => [...t])
     }
 }
