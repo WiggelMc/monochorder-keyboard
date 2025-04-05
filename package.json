@@ -2,11 +2,11 @@
   "name": "monochorder-keyboard",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "src/main.ts",
   "type": "module",
   "scripts": {
-    "generate": "tsc && node ./build/index.js",
-    "watch": "tsc-watch --onSuccess \"node ./build/index.js\""
+    "generate": "tsc && node ./build/main.js",
+    "watch": "tsc-watch --onSuccess \"node ./build/main.js\""
   },
   "author": "WiggelMc",
   "license": "MIT",

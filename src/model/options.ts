@@ -3,7 +3,7 @@ import { Vector3 } from "../math/vector3.js"
 export interface ShellOptions {
     thickness: number
     margin: number
-    curvePointsPerMM: number
+    curveSmoothness: number
 }
 
 export interface FingerDefaultProperties {
@@ -69,9 +69,16 @@ export type PlateOptions = ElementPos & {
     rj9: RJ9Options
 }
 
-export interface Options {
+export interface ModelOptions {
     shell: ShellOptions
     finger: FingerOptions
     socket: SocketOptions
     plate: PlateOptions
+}
+
+export interface RenderOptions {
+    printCut: boolean
+    showHull: boolean
+    showPoints: boolean
+    showComponents: boolean
 }
