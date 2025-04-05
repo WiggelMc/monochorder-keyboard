@@ -27,7 +27,11 @@ export class Body {
 
         if (index == undefined) {
             const length = this.points.push(vector)
-            return length - 1
+            const newIndex = length - 1
+
+            this.pointMap.set(vector.toString(), newIndex)
+
+            return newIndex
         } else {
             return index
         }
