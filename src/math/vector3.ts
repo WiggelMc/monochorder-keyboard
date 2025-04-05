@@ -9,6 +9,10 @@ export class Vector3 {
         this.z = z
     }
 
+    static all(value: number): Vector3 {
+        return new Vector3(value, value, value)
+    }
+
     toString(): string {
         return `(${this.x}, ${this.y}, ${this.z})`
     }
