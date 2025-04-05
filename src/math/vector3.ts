@@ -9,10 +9,6 @@ export class Vector3 {
         this.z = z
     }
 
-    static all(value: number): Vector3 {
-        return new Vector3(value, value, value)
-    }
-
     toString(): string {
         return `(${this.x}, ${this.y}, ${this.z})`
     }
@@ -35,8 +31,8 @@ export class Vector3 {
 
     dot(other: Vector3): number {
         return (
-            this.x * other.x 
-            + this.y * other.y 
+            this.x * other.x
+            + this.y * other.y
             + this.z * other.z
         )
     }
@@ -82,7 +78,7 @@ export class Vector3 {
 
     static angleBetween(a: Vector3, b: Vector3): number {
         return Math.asin(
-            a.cross(b).magnitude() 
+            a.cross(b).magnitude()
             / (a.magnitude() * b.magnitude())
         )
     }
@@ -92,17 +88,21 @@ export class Vector3 {
     }
 
     static distance(a: Vector3, b: Vector3): number {
-        return Vector3.fromTo(a,b).magnitude()
+        return Vector3.fromTo(a, b).magnitude()
     }
 
     static sqrDistance(a: Vector3, b: Vector3): number {
-        return Vector3.fromTo(a,b).sqrMagnitude()
+        return Vector3.fromTo(a, b).sqrMagnitude()
     }
 
     static lerp(a: Vector3, b: Vector3, t: number): Vector3 {
-        return a.add(Vector3.fromTo(a,b).scale(t))
+        return a.add(Vector3.fromTo(a, b).scale(t))
     }
 
-    static readonly zero = new Vector3(0,0,0)
-    static readonly one = new Vector3(1,1,1)
+    static readonly zero = new Vector3(0, 0, 0)
+    static readonly one = new Vector3(1, 1, 1)
+
+    static all(value: number): Vector3 {
+        return new Vector3(value, value, value)
+    }
 }
