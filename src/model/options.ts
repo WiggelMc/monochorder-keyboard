@@ -82,3 +82,8 @@ export interface RenderOptions {
     showPoints: boolean
     showComponents: boolean
 }
+
+export interface FileOptions {
+    outDirPath: string,
+    outFileNamePattern: (name: string) => string
+}

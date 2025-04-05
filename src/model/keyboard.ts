@@ -1,22 +1,22 @@
 import { cylinder, polyhedron, ScadMethods, union, vector3 } from "scad-ts";
 import { Serializable } from "scad-ts/dist/util/Serializable.js";
 import { Vector3 } from "../math/vector3.js";
-import { ModelOptions, RenderOptions } from "./options.js";
+import { FileOptions, ModelOptions, RenderOptions } from "./options.js";
 import * as fs from "fs"
 import * as Path from "path"
 
 export class Keyboard {
+    private fileOptions: FileOptions
     private modelOptions: ModelOptions
-    private outDirPath: string
 
-    constructor(outDirPath: string,  modelOptions: ModelOptions) {
-        this.outDirPath = outDirPath
+    constructor(fileOptions: FileOptions,  modelOptions: ModelOptions) {
+        this.fileOptions = fileOptions
         this.modelOptions = modelOptions
     }
 
     generateFile(name: string, renderOptions: RenderOptions): void {
         fs.writeFileSync(
-            Path.join(this.outDirPath, `monochorder-${name}.scad`),
+            Path.join(this.fileOptions.outDirPath, this.fileOptions.outFileNamePattern(name)),
             this.generate(renderOptions)
         )
     }
@@ -36,7 +36,7 @@ export class Keyboard {
                     [2,-10,16],
                     {x: 1, y: 2, z: 4},
                     {x: 5, y: 3, z: 7},
-                    new Vector3(6, 1, 20),
+                    new Vector3(6, 1, 10),
                 ],
                 [
                     [0,1,2],

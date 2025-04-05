@@ -2,12 +2,19 @@ import * as fs from "fs"
 import * as Path from "path"
 import { Keyboard } from "./model/keyboard.js"
 import { Vector3 } from "./math/vector3.js"
+import { FileOptions, ModelOptions } from "./model/options.js"
 
 const OUT_DIR_NAME = "out"
 const outDirPath = Path.join(import.meta.dirname, "..", OUT_DIR_NAME)
 fs.mkdirSync(outDirPath, { recursive: true })
 
-const keyboard = new Keyboard(outDirPath, {
+
+const fileOptions: FileOptions = {
+    outDirPath: outDirPath,
+    outFileNamePattern: (name) => `monochorder-${name}.scad`
+}
+
+const modelOptions: ModelOptions = {
     shell: {
         curveSmoothness: 10,
         margin: 10,
@@ -90,7 +97,10 @@ const keyboard = new Keyboard(outDirPath, {
             lowerPos: new Vector3(0, 0, 0)
         }
     }
-})
+}
+
+
+const keyboard = new Keyboard(fileOptions, modelOptions)
 
 keyboard.generateFile("view", {
     printCut: false,
