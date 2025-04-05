@@ -11,6 +11,6 @@ export function point(color: ScadColor, size: number = DEFAULT_POINT_SIZE): Colo
 export function cubedPoint(colorA: ScadColor, colorB: ScadColor, size: number = DEFAULT_POINT_SIZE): Union & ScadMethods {
     return union(
         point(colorA, size),
-        cube(size * 1.5).color(colorB).translate(Vector3.all(size * -0.75))
+        cube(size * 1.5, true).color(colorB)
     )
 }
