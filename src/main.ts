@@ -11,10 +11,11 @@ fs.mkdirSync(outDirPath, { recursive: true })
 
 const fileOptions: FileOptions = {
     outDirPath: outDirPath,
-    outFileNamePattern: (name) => `monochorder-${name}.scad`
+    outFileNamePattern: (name, side) => `monochorder-${side.toLowerCase()}-${name}.scad`
 }
 
-const modelOptions: ModelOptions = {
+const leftModelOptions: ModelOptions = {
+    side: "Left",
     shell: {
         curveSmoothness: 10,
         margin: 10,
@@ -99,36 +100,47 @@ const modelOptions: ModelOptions = {
     }
 }
 
+const rightModelOptions: ModelOptions = {
+    ...leftModelOptions,
+    side: "Right"
+}
 
-const keyboard = new Keyboard(fileOptions, modelOptions)
 
-keyboard.generateFile("view", {
-    printCut: false,
-    showHull: true,
-    showPoints: true,
-    showComponents: true
-})
+const keyboards = [
+    new Keyboard(fileOptions, leftModelOptions),
+    new Keyboard(fileOptions, rightModelOptions)
+]
 
-keyboard.generateFile("view-raw", {
-    printCut: false,
-    showHull: true,
-    showPoints: false,
-    showComponents: false
-})
+for (const keyboard of keyboards) {
 
-keyboard.generateFile("internal", {
-    printCut: false,
-    showHull: false,
-    showPoints: true,
-    showComponents: true
-})
+    keyboard.generateFile("view", {
+        printCut: false,
+        showHull: true,
+        showPoints: true,
+        showComponents: true
+    })
 
-keyboard.generateFile("print", {
-    printCut: true,
-    showHull: true,
-    showPoints: false,
-    showComponents: false
-})
+    keyboard.generateFile("view-raw", {
+        printCut: false,
+        showHull: true,
+        showPoints: false,
+        showComponents: false
+    })
 
+    keyboard.generateFile("internal", {
+        printCut: false,
+        showHull: false,
+        showPoints: true,
+        showComponents: true
+    })
+
+    keyboard.generateFile("print", {
+        printCut: true,
+        showHull: true,
+        showPoints: false,
+        showComponents: false
+    })
+
+}
 
 console.log("Successfully generated Model Files")

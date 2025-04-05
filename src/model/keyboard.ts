@@ -20,7 +20,7 @@ export class Keyboard {
 
     generateFile(name: string, renderOptions: RenderOptions): void {
         fs.writeFileSync(
-            Path.join(this.fileOptions.outDirPath, this.fileOptions.outFileNamePattern(name)),
+            Path.join(this.fileOptions.outDirPath, this.fileOptions.outFileNamePattern(name, this.modelOptions.side)),
             this.generate(renderOptions)
         )
     }

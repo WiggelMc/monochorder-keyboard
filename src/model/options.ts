@@ -69,7 +69,10 @@ export type PlateOptions = ElementPos & {
     rj9: RJ9Options
 }
 
+export type Side = "Left" | "Right"
+
 export interface ModelOptions {
+    side: Side
     shell: ShellOptions
     finger: FingerOptions
     socket: SocketOptions
@@ -85,5 +88,5 @@ export interface RenderOptions {
 
 export interface FileOptions {
     outDirPath: string,
-    outFileNamePattern: (name: string) => string
+    outFileNamePattern: (name: string, side: Side) => string
 }
