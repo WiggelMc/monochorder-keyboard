@@ -90,3 +90,5 @@ export interface FileOptions {
     outDirPath: string,
     outFileNamePattern: (name: string, side: Side) => string
 }
+
+// TODO: Extract the Config between Points and others (eg. all points get one section)

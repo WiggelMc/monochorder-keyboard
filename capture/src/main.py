@@ -9,9 +9,11 @@ class Camera:
     name: str
     capture: cv2.VideoCapture
 
+def select_point(event: int, x: int, y: int, flags: int, name: str):    
+    print(f"{name}: ({event}, {x}, {y}, {flags:>08b})")
 
 def main():
-    
+
     devices = FilterGraph().get_input_devices()
     print("\nConnected Cameras:\n")
     print("\n".join([f"{i: >4}: {name}" for i, name in enumerate(devices)]))
@@ -34,7 +36,9 @@ def main():
             has_frame, frame = cam.capture.read()
 
             if has_frame:
-                cv2.imshow(f"{cam.name} ({cam.id})", frame)
+                window_name = f"{cam.name} ({cam.id})"
+                cv2.imshow(window_name, frame)
+                cv2.setMouseCallback(window_name, select_point, window_name)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 running = False
@@ -42,3 +46,21 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# Steps:
+# - Select Cams
+# - Select Hand
+# - Make Calibration Photos (Calibrate)
+# - Make Photos (as many as needed) (All Photos are in the same coordinate system)
+# - Save Photos to Disk
+# - Select Points (Scroll through Photos) (Points are shared between Photos and Labeled)
+# - Save Points (json, txt) (always saves both, json for editing, txt for copying into ts)
+
+# Json Cordinate System:
+# - save points in px
+# - save calibration data in json
+
+# TypeScript Coordinate System:
+# - Thumb Neutral is Origin
+# - Thumb Press is in Y Direction
+# - Thumb Lower is in Z Direction
