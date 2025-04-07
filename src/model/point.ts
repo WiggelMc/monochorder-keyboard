@@ -1,5 +1,4 @@
 import { cube, ScadColor, ScadMethods, sphere, Union, union } from "scad-ts"
-import { Vector3 } from "../math/vector3.js"
 import { Color } from "scad-ts/dist/transformations/color.js"
 
 export const DEFAULT_POINT_SIZE = 1.2
