@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Sequence, cast
 import cv2
+from cv2.typing import MatLike, Rect
 from pygrabber.dshow_graph import FilterGraph
 import tkinter as tk
 
@@ -35,6 +36,7 @@ def main():
     cam_ids = [int(cam1_id), int(cam2_id)]
     cams = [Camera(id, devices[id], cv2.VideoCapture(id)) for id in cam_ids]
 
+
     print("\nSelected Cameras:\n")
     print("\n".join([f"{cam.id: >4}: {cam.name}" for cam in cams]))
     print("\n")
@@ -57,6 +59,31 @@ def main():
 if __name__ == "__main__":
     main()
 
+
+def stuff():
+
+    imagePoints1 = []
+    imagePoints2 = []
+    imageSize = [100, 100]
+
+    retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cast(
+        typ=tuple[float, MatLike, MatLike, MatLike, MatLike, MatLike, MatLike, MatLike, MatLike],
+        val=cv2.stereoCalibrate([], [], [], [], [], [], [], imageSize)
+    )
+
+    R1, R2, P1, P2, Q, validPixROI1, validPixROI2 = cast(
+        typ=tuple[MatLike, MatLike, MatLike, MatLike, MatLike, Rect, Rect],
+        val=cv2.stereoRectify(cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, imageSize, R)
+    )
+
+    points = cast(
+        typ=MatLike,
+        val=cv2.triangulatePoints(R1, R2, imagePoints1, imagePoints2)
+    )
+
+
+    cv2.stereoRectify() # Get Projection Matrices
+    cv2.triangulatePoints() # projection matrices + 2d points => 
 # Steps:
 # - Select Cams
 # - Select Hand
@@ -74,3 +101,22 @@ if __name__ == "__main__":
 # - Thumb Neutral is Origin
 # - Thumb Press is in Y Direction
 # - Thumb Lower is in Z Direction
+
+
+# TODO:
+# - formatter
+# - ui
+# - math
+
+
+# 	cv.triangulatePoints(	projMatr1, projMatr2, projPoints1, projPoints2[, points4D]	) 
+# -> 	points4D
+
+# 	cv.stereoRectify(	cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, imageSize, R, T[, R1[, R2[, P1[, P2[, Q[, flags[, alpha[, newImageSize]]]]]]]]	) 
+# -> 	R1, R2, P1, P2, Q, validPixROI1, validPixROI2
+
+# cv.stereoCalibrate(	objectPoints, imagePoints1, imagePoints2, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, imageSize[, R[, T[, E[, F[, flags[, criteria]]]]]]	) 
+# -> 	retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F
+
+# cv.stereoCalibrateExtended(	objectPoints, imagePoints1, imagePoints2, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, imageSize, R, T[, E[, F[, perViewErrors[, flags[, criteria]]]]]	) 
+# -> 	retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F, perViewErrors
