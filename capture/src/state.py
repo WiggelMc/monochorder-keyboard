@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field, fields
+from cv2.typing import MatLike
 import json
 
 
@@ -46,13 +47,26 @@ class PixelPositionOptions:
     def from_dict(dict: dict):
         return PixelPositionOptions(**{k: ElementPixelPos.from_dict(v) for k, v in dict.items()})
 
+
+
 @dataclass
 class CalibrationOptions:
-    pass
+    cameraMatrix1: MatLike
+    distCoeffs1: MatLike
+    cameraMatrix2: MatLike
+    distCoeffs2: MatLike
+    imageSize: MatLike
+    R: MatLike
+    T: MatLike
+    E: MatLike
+    F: MatLike
 
     @staticmethod
     def from_dict(dict: dict):
-        return CalibrationOptions(**dict)
+        return CalibrationOptions(**dict) # TODO
+    
+    def to_dict(self) -> dict:
+        return {}
 
 @dataclass
 class AppOptions:
@@ -65,6 +79,12 @@ class AppOptions:
             positions= PixelPositionOptions.from_dict(dict["positions"]),
             calibration= CalibrationOptions.from_dict(dict["calibration"])
         )
+    
+    def to_dict(self) -> dict:
+        return {
+            "positions": asdict(self.positions),
+            "calibration": self.calibration.to_dict()
+        }
 
 def main():
     a = AppOptions()
