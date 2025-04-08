@@ -66,15 +66,14 @@ if __name__ == "__main__":
 
 
 
-# Hand: Left / Right
-# Name: str
-
 # Rows: int
 # Columns: int
 # squareWidth: float
 # [calibrate]
 
 # [snap] -> [Keep|Discard]
+
+# Name: str
 # [Save and Quit]
 
 

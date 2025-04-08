@@ -1,8 +1,12 @@
 from dataclasses import asdict, dataclass, field, fields
+import os
+import cv2
 from cv2.typing import MatLike
 import base64
 import json
 import numpy as np
+import glob
+from __future__ import annotations
 
 
 @dataclass
@@ -84,13 +88,13 @@ class CalibrationOptions:
         return {k: np_to_dict(v) for k, v in asdict(self).items()}
 
 @dataclass
-class AppOptions:
+class ProjectOptions:
     positions: PixelPositionOptions = field(default_factory=PixelPositionOptions)
     calibration: CalibrationOptions = field(default_factory=CalibrationOptions)
 
     @staticmethod
     def from_dict(dict: dict):
-        return AppOptions(
+        return ProjectOptions(
             positions= PixelPositionOptions.from_dict(dict["positions"]),
             calibration= CalibrationOptions.from_dict(dict["calibration"])
         )
@@ -101,12 +105,97 @@ class AppOptions:
             "calibration": self.calibration.to_dict()
         }
 
-def main():
-    a = AppOptions()
-    a.positions.bottomSocket.lowerPos.image1 = ImagePos(1,1000000000)
-    x = json.dumps(a.to_dict())
-    print(x)
-    print(AppOptions.from_dict(json.loads(x)))
+@dataclass
+class DoubleImage:
+    image1: MatLike
+    image2: MatLike
 
-if __name__ == "__main__":
-    main()
+    def save(self, dir: str, index: int):
+        for index, image in enumerate([self.image1, self.image2]):
+            cv2.imwrite(
+                os.path.join(dir, f"img_{index}_cam_{index+1}.png"),
+                image
+            )
+
+
+PROJECT_DIR = "projects"
+OPTIONS_FILE = "properties.json"
+
+def get_file_name(path: str):
+    _, file_name = os.path.split(path)
+    return file_name
+
+def get_last_dir_name(path: str):
+    dir_path, _ = os.path.split(path)
+    _, dir_name = os.path.split(dir_path)
+    return dir_name
+
+@dataclass
+class Project:
+    name: str
+    options: ProjectOptions
+    images: list[DoubleImage]
+
+    @staticmethod
+    def list_all() -> list[str]:
+        files = glob.glob(os.path.join(PROJECT_DIR,"*",OPTIONS_FILE))
+        return [get_last_dir_name(file) for file in files]
+
+    @staticmethod
+    def load(name: str) -> Project:
+
+        images: list[DoubleImage] = []
+        image_files = glob.glob(os.path.join(PROJECT_DIR, name, "img_*_cam_*.png"))
+        image_id_strings = {get_file_name(image_file).split("_")[1] for image_file in image_files}
+        image_ids = [int(x) for x in image_id_strings if x.isdigit()]
+        image_ids.sort()
+
+        for image_id in image_ids:
+            image1_path = os.path.join(PROJECT_DIR, name, f"img_{image_id}_cam_1")
+            image2_path = os.path.join(PROJECT_DIR, name, f"img_{image_id}_cam_2")
+            if (os.path.isfile(image1_path) and os.path.isfile(image2_path)):
+                image1 = cv2.imread(image1_path)
+                image2 = cv2.imread(image2_path)
+                images.append(
+                    DoubleImage(
+                        image1=image1,
+                        image2=image2
+                    )
+                )
+
+        options: ProjectOptions
+        with open(os.path.join(PROJECT_DIR, name, OPTIONS_FILE), "r") as file:
+            options = ProjectOptions.from_dict(json.loads(file.read()))
+
+        return Project(
+            name=name,
+            options=options,
+            images=images
+        )
+
+    def exists(self) -> bool:
+        return os.path.isfile(os.path.join(PROJECT_DIR, self.name, OPTIONS_FILE))
+
+    def save_initial(self):
+        if (not os.path.exists(os.path.join(PROJECT_DIR, self.name))):
+            os.makedirs(os.path.join(PROJECT_DIR, self.name))
+            
+        self.save()
+
+        for id, image in enumerate(self.images):
+            cv2.imwrite(os.path.join(PROJECT_DIR, self.name, f"img_{id}_cam_1"), image.image1)
+            cv2.imwrite(os.path.join(PROJECT_DIR, self.name, f"img_{id}_cam_2"), image.image2)
+
+    def save(self):
+        with open(os.path.join(PROJECT_DIR, self.name, OPTIONS_FILE), "w") as file:
+            file.write(json.dumps(self.options.to_dict()))
+
+# def main():
+#     a = ProjectOptions()
+#     a.positions.bottomSocket.lowerPos.image1 = ImagePos(1,1000000000)
+#     x = json.dumps(a.to_dict())
+#     print(x)
+#     print(ProjectOptions.from_dict(json.loads(x)))
+
+# if __name__ == "__main__":
+#     main()
