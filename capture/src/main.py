@@ -7,8 +7,8 @@ from pygrabber.dshow_graph import FilterGraph
 import tkinter as tk
 from itertools import chain
 
-from output import ElementPos, FingerPositionOptions, PositionOptions, SocketPositionOptions, Vector3
-from state import CalibrationOptions, PixelPositionOptions
+from logic.output import ElementPos, FingerPositionOptions, PositionOptions, SocketPositionOptions, Vector3
+from logic.state import CalibrationOptions, PixelPositionOptions
 
 @dataclass
 class Camera:
@@ -63,6 +63,30 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+# Hand: Left / Right
+# Name: str
+
+# Rows: int
+# Columns: int
+# squareWidth: float
+# [calibrate]
+
+# [snap] -> [Keep|Discard]
+# [Save and Quit]
+
+
+
+# Name: list
+# [Open]
+
+# Image: list
+# Object: "pinky" | ...
+# Variant: "neutral" | "pressed" | "lower"
+# [Save]
+# []
 
 
 # Steps:

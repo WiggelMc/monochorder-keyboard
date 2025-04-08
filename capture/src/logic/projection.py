@@ -103,6 +103,12 @@ def projectPoints(calibration: CalibrationOptions, positions: PixelPositionOptio
         val=cv2.triangulatePoints(R1, R2, imagePoints1, imagePoints2)
     )
 
+    # TODO: Move Coordinate System Origin to thumb
+    # subtract thumbNeutral from all
+
+    # TODO: Rotate Positions so that axis line up (neutral -> press: z-) (neutral.xy -> lower.xy: x-)
+    
+
     outVectorList = [Vector3(x,y,z) for point in outPointList for [x, y, z] in point]
 
     outPositionList = [
