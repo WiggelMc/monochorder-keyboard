@@ -1,6 +1,8 @@
 from dataclasses import asdict, dataclass, field, fields
 from cv2.typing import MatLike
+import base64
 import json
+import numpy as np
 
 
 @dataclass
@@ -48,6 +50,19 @@ class PixelPositionOptions:
         return PixelPositionOptions(**{k: ElementPixelPos.from_dict(v) for k, v in dict.items()})
 
 
+def np_to_dict(arr: MatLike) -> dict:
+    return {
+        "dtype": arr.dtype,
+        "bytes": base64.b64encode(arr),
+        "shape": arr.shape
+    }
+
+def np_from_dict(dict: dict) -> MatLike:
+    return np.frombuffer(
+        base64.b64decode(dict["bytes"]),
+        np.dtype(dict["dtype"])
+    ).reshape(dict["shape"])
+
 
 @dataclass
 class CalibrationOptions:
@@ -63,10 +78,10 @@ class CalibrationOptions:
 
     @staticmethod
     def from_dict(dict: dict):
-        return CalibrationOptions(**dict) # TODO
+        return CalibrationOptions(**{k: np_from_dict(v) for k, v in dict.items()})
     
     def to_dict(self) -> dict:
-        return {}
+        return {k: np_to_dict(v) for k, v in asdict(self).items()}
 
 @dataclass
 class AppOptions:
@@ -89,7 +104,7 @@ class AppOptions:
 def main():
     a = AppOptions()
     a.positions.bottomSocket.lowerPos.image1 = ImagePos(1,1000000000)
-    x = json.dumps(asdict(a))
+    x = json.dumps(a.to_dict())
     print(x)
     print(AppOptions.from_dict(json.loads(x)))
 
