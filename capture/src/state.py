@@ -14,8 +14,8 @@ class ImagePos:
 
 @dataclass
 class PointPixelPos:
-    imageA: ImagePos | None = None
-    imageB: ImagePos | None = None
+    image1: ImagePos | None = None
+    image2: ImagePos | None = None
 
     @staticmethod
     def from_dict(dict: dict):
@@ -88,7 +88,7 @@ class AppOptions:
 
 def main():
     a = AppOptions()
-    a.positions.bottomSocket.lowerPos.imageA = ImagePos(1,1000000000)
+    a.positions.bottomSocket.lowerPos.image1 = ImagePos(1,1000000000)
     x = json.dumps(asdict(a))
     print(x)
     print(AppOptions.from_dict(json.loads(x)))
