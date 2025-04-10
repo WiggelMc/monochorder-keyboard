@@ -27,17 +27,3 @@ class Camera:
 class ConnectedCamera:
     camera: Camera
     capture: cv2.VideoCapture
-
-    def render(self, window: str):
-        has_frame, frame = self.capture.read()
-
-        if has_frame:
-            cv2.imshow(window, frame)
-
-        cv2.waitKey(1)
-
-
-
-
-
-
