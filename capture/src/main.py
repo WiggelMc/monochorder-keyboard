@@ -21,14 +21,14 @@ def select_point(event: int, x: int, y: int, flags: int, name: str):
 
 def main():
 
-    root = tk.Tk()
-    button = tk.Button(root, text="Hello")
-    button2 = tk.Button(root, text="Hello")
-    button.grid(row=0, column=0)
-    button2.grid(row=0, column=1)
+    # root = tk.Tk()
+    # button = tk.Button(root, text="Hello")
+    # button2 = tk.Button(root, text="Hello")
+    # button.grid(row=0, column=0)
+    # button2.grid(row=0, column=1)
 
-    root.mainloop()
-    return
+    # root.mainloop()
+    # return
 
     devices = FilterGraph().get_input_devices()
     print("\nConnected Cameras:\n")

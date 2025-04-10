@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import asdict, dataclass, field, fields
 import os
 import cv2
@@ -6,7 +7,6 @@ import base64
 import json
 import numpy as np
 import glob
-from __future__ import annotations
 
 
 @dataclass
