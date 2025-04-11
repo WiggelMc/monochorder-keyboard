@@ -106,6 +106,9 @@ def projectPoints(calibration: CalibrationOptions, positions: PixelPositionOptio
         val=cv2.stereoRectify(c.cameraMatrix1, c.distCoeffs1, c.cameraMatrix2, c.distCoeffs2, c.imageSize, c.R, c.T)
     )
 
+    imagePoints1 = cv2.undistortPoints(imagePoints1.T, c.cameraMatrix1, c.distCoeffs1, R=R1, P=P1).reshape(-1, 2).T
+    imagePoints2 = cv2.undistortPoints(imagePoints2.T, c.cameraMatrix2, c.distCoeffs2, R=R2, P=P2).reshape(-1, 2).T
+
     points4D = cast(
         typ=MatLike,
         val=cv2.triangulatePoints(P1, P2, imagePoints1, imagePoints2)
