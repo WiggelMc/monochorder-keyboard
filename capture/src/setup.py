@@ -22,18 +22,14 @@ class CalibrateState:
 
 @dataclass
 class State:
-    calibrate: CalibrateState | None
-    project: Project | None
-    running: bool
-    makeImage: bool
+    calibrate: CalibrateState | None = None
+    project: Project | None = None
+    running: bool = True
+    makeImage: bool = False
+    deleteImage: bool = False
 
 
-state: State = State(
-    calibrate=None,
-    project=None,
-    running=True,
-    makeImage=False
-)
+state: State = State()
 
 def only_int(input: str):
     return input.isdigit()
@@ -117,15 +113,16 @@ def tk_main():
                 squareWidth=float(square_width_var.get())
             )
 
-            render_image_creation(cam1A, cam2A)
+            render_image_creation()
 
         row += 1
         tk.Button(root, text="Calibrate [C]", command=submit).grid(row=row, column=0, columnspan=2, pady=20)
 
-    def render_image_creation(cam1: ConnectedCamera, cam2: ConnectedCamera):
+    def render_image_creation():
         clear()
 
         def submit():
+            state.project.save_initial()
             root.quit()
 
         tk.Button(root, text="Save and Quit [C]", command=submit).grid(row=1, column=0, columnspan=2, pady=20)
@@ -146,32 +143,58 @@ def cv_main():
             if has_frame2:
                 cv2.imshow("Cam 2", frame2)
 
-            if cv2.waitKey(1) & 0xFF == ord('c'):
-                state.makeImage = True
+            key = cv2.waitKey(1) & 0xFF
 
-            if (state.makeImage and has_frame1 and has_frame2):
+            if key == ord('c'):
+                state.makeImage = True
+            elif key == ord('d'):
+                state.deleteImage = True
+
+            if (has_frame1 and has_frame2 and state.makeImage):
                 cv2.imshow("Image 1", frame1)
                 cv2.imshow("Image 2", frame2)
 
                 if state.project is None:
 
-                    calibration = calibrate(
-                        patternSize=state.calibrate.patternSize,
-                        squareWidth=state.calibrate.squareWidth,
-                        image1=frame1,
-                        image2=frame2
-                    )
-                    state.project = Project(
-                        name=state.calibrate.name,
-                        options=ProjectOptions(calibration=calibration),
-                        images=[]
-                    )
+                    try:
+                        calibration = calibrate(
+                            patternSize=state.calibrate.patternSize,
+                            squareWidth=state.calibrate.squareWidth,
+                            image1=frame1,
+                            image2=frame2
+                        )
+                        state.project = Project(
+                            name=state.calibrate.name,
+                            options=ProjectOptions(calibration=calibration),
+                            images=[]
+                        )
+                        state.project.images.append(
+                            DoubleImage(
+                                image1=frame1,
+                                image2=frame2
+                            )
+                        )
+                    except Exception as e:
+                        print(e)
                 else:
-                    pass
+                    state.project.images.append(
+                        DoubleImage(
+                            image1=frame1,
+                            image2=frame2
+                        )
+                    )
                     
 
                 state.makeImage = False
+            
+            if state.deleteImage:
+                if state.project is not None and len(state.project.images) > 1:
+                    state.project.images.pop()
 
+                    last_image = state.project.images[-1]
+                    cv2.imshow("Image 1", last_image.image1)
+                    cv2.imshow("Image 2", last_image.image2)
+                state.deleteImage = False
 
 def main():
     t1 = Thread(target=tk_main)

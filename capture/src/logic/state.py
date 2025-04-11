@@ -56,9 +56,9 @@ class PixelPositionOptions:
 
 def np_to_dict(arr: MatLike) -> dict:
     return {
-        "dtype": arr.dtype,
-        "bytes": base64.b64encode(arr),
-        "shape": arr.shape
+        "dtype": arr.dtype.str,
+        "bytes": base64.b64encode(arr).decode("ascii"),
+        "shape": list(arr.shape)
     }
 
 def np_from_dict(dict: dict) -> MatLike:
@@ -85,6 +85,7 @@ class CalibrationOptions:
         return CalibrationOptions(**{k: np_from_dict(v) for k, v in dict.items()})
     
     def to_dict(self) -> dict:
+        print(self)
         return {k: np_to_dict(v) for k, v in asdict(self).items()}
 
 @dataclass
@@ -144,8 +145,8 @@ class Project:
         image_ids.sort()
 
         for image_id in image_ids:
-            image1_path = os.path.join(PROJECT_DIR, name, f"img_{image_id}_cam_1")
-            image2_path = os.path.join(PROJECT_DIR, name, f"img_{image_id}_cam_2")
+            image1_path = os.path.join(PROJECT_DIR, name, f"img_{image_id}_cam_1.png")
+            image2_path = os.path.join(PROJECT_DIR, name, f"img_{image_id}_cam_2.png")
             if (os.path.isfile(image1_path) and os.path.isfile(image2_path)):
                 image1 = cv2.imread(image1_path)
                 image2 = cv2.imread(image2_path)
@@ -176,11 +177,12 @@ class Project:
         self.save()
 
         for id, image in enumerate(self.images):
-            cv2.imwrite(os.path.join(PROJECT_DIR, self.name, f"img_{id}_cam_1"), image.image1)
-            cv2.imwrite(os.path.join(PROJECT_DIR, self.name, f"img_{id}_cam_2"), image.image2)
+            cv2.imwrite(os.path.join(PROJECT_DIR, self.name, f"img_{id}_cam_1.png"), image.image1)
+            cv2.imwrite(os.path.join(PROJECT_DIR, self.name, f"img_{id}_cam_2.png"), image.image2)
 
     def save(self):
         with open(os.path.join(PROJECT_DIR, self.name, OPTIONS_FILE), "w") as file:
+            print(self.options.to_dict())
             file.write(json.dumps(self.options.to_dict()))
 
 # def main():

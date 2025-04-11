@@ -10,12 +10,12 @@ from logic.state import CalibrationOptions, PixelPositionOptions
 def calibrate(patternSize: Size, squareWidth: float, image1: MatLike, image2: MatLike) -> CalibrationOptions:
     height1, width1 = image2.shape[:2]
     height2, width2 = image2.shape[:2]
-    imageSize = (min(width1, width2), min(height1, height2))
+    imageSize = np.array((min(width1, width2), min(height1, height2)), dtype=np.int32)
 
     scaledImage1 = cv2.resize(image1, imageSize)
     scaledImage2 = cv2.resize(image2, imageSize)
 
-    objectPoints = np.array([[row * squareWidth, column * squareWidth] for row in range(patternSize[0]) for column in range(patternSize[1])], dtype=np.float64)
+    objectPoints = np.array([[row * squareWidth, column * squareWidth, 0] for row in range(patternSize[0]) for column in range(patternSize[1])], dtype=np.float32)
 
     cameraMatrix1 = np.array([
         [imageSize[0], 0, imageSize[0] / 2],
@@ -26,30 +26,38 @@ def calibrate(patternSize: Size, squareWidth: float, image1: MatLike, image2: Ma
     cameraMatrix2 = cameraMatrix1.copy()
     distCoeffs2 = np.zeros(5, dtype=np.float64)
 
-    retval, corners1 = cast(
+    retval1, corners1 = cast(
         typ=tuple[bool, MatLike],
         val=cv2.findChessboardCorners(scaledImage1, patternSize)
     )
 
-    retval, corners2 = cast(
+    retval2, corners2 = cast(
         typ=tuple[bool, MatLike],
         val=cv2.findChessboardCorners(scaledImage2, patternSize)
     )
 
+    print("got points", retval1, retval2)
+
     retval, cameraMatrix1, distCoeffs1, rvecs1, tvecs1 = cast(
         typ=tuple[float, MatLike, MatLike, Sequence[MatLike], Sequence[MatLike]],
-        val=cv2.calibrateCamera(objectPoints, corners1, imageSize, cameraMatrix1, distCoeffs1)
+        val=cv2.calibrateCamera([objectPoints], [corners1], imageSize, cameraMatrix1, distCoeffs1)
     )
+
+    print("calibrated 1", retval)
 
     retval, cameraMatrix2, distCoeffs2, rvecs2, tvecs2 = cast(
         typ=tuple[float, MatLike, MatLike, Sequence[MatLike], Sequence[MatLike]],
-        val=cv2.calibrateCamera(objectPoints, corners2, imageSize, cameraMatrix2, distCoeffs2)
+        val=cv2.calibrateCamera([objectPoints], [corners2], imageSize, cameraMatrix2, distCoeffs2)
     )
+
+    print("calibrated 1", retval)
 
     retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cast(
         typ=tuple[float, MatLike, MatLike, MatLike, MatLike, MatLike, MatLike, MatLike, MatLike],
-        val=cv2.stereoCalibrate(objectPoints, corners1, corners2, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, imageSize)
+        val=cv2.stereoCalibrate([objectPoints], [corners1], [corners2], cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, imageSize)
     )
+
+    print("calibrated Both", retval)
 
     return CalibrationOptions(
         cameraMatrix1=cameraMatrix1,
