@@ -89,8 +89,8 @@ class CalibrationOptions:
 
 @dataclass
 class ProjectOptions:
+    calibration: CalibrationOptions
     positions: PixelPositionOptions = field(default_factory=PixelPositionOptions)
-    calibration: CalibrationOptions = field(default_factory=CalibrationOptions)
 
     @staticmethod
     def from_dict(dict: dict):
@@ -109,13 +109,6 @@ class ProjectOptions:
 class DoubleImage:
     image1: MatLike
     image2: MatLike
-
-    def save(self, dir: str, index: int):
-        for index, image in enumerate([self.image1, self.image2]):
-            cv2.imwrite(
-                os.path.join(dir, f"img_{index}_cam_{index+1}.png"),
-                image
-            )
 
 
 PROJECT_DIR = "projects"

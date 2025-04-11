@@ -4,8 +4,8 @@ from cv2.typing import MatLike, Rect
 import numpy as np
 from itertools import chain
 
-from output import ElementPos, FingerPositionOptions, PositionOptions, SocketPositionOptions, Vector3
-from state import CalibrationOptions, PixelPositionOptions
+from logic.output import ElementPos, FingerPositionOptions, PositionOptions, SocketPositionOptions, Vector3
+from logic.state import CalibrationOptions, PixelPositionOptions
 
 def calibrate(patternSize: MatLike, squareWidth: float, image1: MatLike, image2: MatLike) -> CalibrationOptions:
     height1, width1 = image2.shape[:2]
