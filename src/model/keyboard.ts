@@ -49,6 +49,28 @@ export class Keyboard {
             )
         )
 
-        return obj.serialize({ $fn: 50 })
+        const points = [
+            this.modelOptions.positions.finger.indexFinger,
+            this.modelOptions.positions.finger.middleFinger,
+            this.modelOptions.positions.finger.pinky,
+            this.modelOptions.positions.finger.resetButton,
+            this.modelOptions.positions.finger.ringFinger,
+            this.modelOptions.positions.finger.thumb,
+            this.modelOptions.positions.plate,
+            this.modelOptions.positions.socket.bottomSocket,
+            this.modelOptions.positions.socket.topSocket,
+        ].flatMap((e) => [
+            point(Color.white).translate(e.neutralPos),
+            point(Color.red).translate(e.pressedPos),
+            point(Color.blue).translate(e.lowerPos)
+        ])
+
+        const obj2 = union(
+            ...(
+                renderOptions.showPoints ? points : []
+            )
+        )
+
+        return obj2.serialize({ $fn: 50 })
     }
 }
