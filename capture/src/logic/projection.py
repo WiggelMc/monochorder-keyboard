@@ -95,36 +95,32 @@ def projectPoints(calibration: CalibrationOptions, positions: PixelPositionOptio
     imagePoints1 = np.array(
         [[pos.image1.x, pos.image1.y] for pos in positionList],
         dtype=np.float64
-    )
+    ).T
     imagePoints2 = np.array(
         [[pos.image2.x, pos.image2.y] for pos in positionList],
         dtype=np.float64
-    )
+    ).T
 
     R1, R2, P1, P2, Q, validPixROI1, validPixROI2 = cast(
         typ=tuple[MatLike, MatLike, MatLike, MatLike, MatLike, Rect, Rect],
         val=cv2.stereoRectify(c.cameraMatrix1, c.distCoeffs1, c.cameraMatrix2, c.distCoeffs2, c.imageSize, c.R, c.T)
     )
 
-    outPointList = cast(
+    points4D = cast(
         typ=MatLike,
-        val=cv2.triangulatePoints(R1, R2, imagePoints1, imagePoints2)
+        val=cv2.triangulatePoints(P1, P2, imagePoints1, imagePoints2)
     )
 
-    # TODO: Move Coordinate System Origin to thumb
-    # subtract thumbNeutral from all
+    points3D = points4D[:3, :] / points4D[3, :]
 
-    # TODO: Rotate Positions so that axis line up (neutral -> press: z-) (neutral.xy -> lower.xy: x-)
-    
-
-    outVectorList = [Vector3(x,y,z) for point in outPointList for [x, y, z] in point]
+    outVectorList = [Vector3(x,y,z) for [x, y, z] in points3D.T]
 
     outPositionList = [
         ElementPos(neutralPos, pressedPos, lowerPos)
         for [neutralPos, pressedPos, lowerPos] in
         (
             outVectorList[i:i+3] 
-            for i in range(0, len(outPointList), 3)
+            for i in range(0, len(outVectorList), 3)
         )
     ]
 

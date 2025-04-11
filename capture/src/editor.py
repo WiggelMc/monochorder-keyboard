@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from itertools import chain
 from queue import Queue
 from threading import Thread
 import tkinter as tk
@@ -170,8 +171,38 @@ def cv_main():
         if state.project is not None:
             if state.selected_image <= len(state.project.images):
                 image = state.project.images[state.selected_image]
-                cv2.imshow("Image 1", image.image1)
-                cv2.imshow("Image 2", image.image2)
+                image1 = image.image1.copy()
+                image2 = image.image2.copy()
+
+
+                positions = state.project.options.positions
+
+                positionList = list(chain.from_iterable((
+                    (
+                        pos.neutralPos,
+                        pos.pressedPos,
+                        pos.lowerPos
+                    ) for pos in (
+                        positions.pinky,
+                        positions.ringFinger,
+                        positions.middleFinger,
+                        positions.indexFinger,
+                        positions.thumb,
+                        positions.resetButton,
+                        positions.topSocket,
+                        positions.bottomSocket,
+                        positions.plate
+                    )
+                )))
+
+                for pos in positionList:
+                    if pos.image1 is not None:
+                        cv2.circle(image1, (pos.image1.x, pos.image1.y), 5, (255, 255, 20), -1)
+                    if pos.image2 is not None:
+                        cv2.circle(image2, (pos.image2.x, pos.image2.y), 5, (255, 255, 20), -1)
+
+                cv2.imshow("Image 1", image1)
+                cv2.imshow("Image 2", image2)
                 cv2.setMouseCallback("Image 1", on_mouse, PosImage.IMAGE_1)
                 cv2.setMouseCallback("Image 2", on_mouse, PosImage.IMAGE_2)
             
