@@ -1,21 +1,21 @@
 from typing import Sequence, cast
 import cv2
-from cv2.typing import MatLike, Rect
+from cv2.typing import MatLike, Rect, Size
 import numpy as np
 from itertools import chain
 
 from logic.output import ElementPos, FingerPositionOptions, PositionOptions, SocketPositionOptions, Vector3
 from logic.state import CalibrationOptions, PixelPositionOptions
 
-def calibrate(patternSize: MatLike, squareWidth: float, image1: MatLike, image2: MatLike) -> CalibrationOptions:
+def calibrate(patternSize: Size, squareWidth: float, image1: MatLike, image2: MatLike) -> CalibrationOptions:
     height1, width1 = image2.shape[:2]
     height2, width2 = image2.shape[:2]
-    imageSize = np.array((min(width1, width2), min(height1, height2)), dtype=np.float64)
+    imageSize = (min(width1, width2), min(height1, height2))
 
     scaledImage1 = cv2.resize(image1, imageSize)
     scaledImage2 = cv2.resize(image2, imageSize)
 
-    objectPoints = [[row * squareWidth, column * squareWidth] for row in range(patternSize[0]) for column in range(patternSize[1])]
+    objectPoints = np.array([[row * squareWidth, column * squareWidth] for row in range(patternSize[0]) for column in range(patternSize[1])], dtype=np.float64)
 
     cameraMatrix1 = np.array([
         [imageSize[0], 0, imageSize[0] / 2],

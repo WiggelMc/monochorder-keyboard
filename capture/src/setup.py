@@ -113,7 +113,7 @@ def tk_main():
                 cam1=cam1A,
                 cam2=cam2A,
                 name=name_var.get(),
-                patternSize=np.array([int(rows_var.get()), int(columns_var.get())]),
+                patternSize=([int(rows_var.get()), int(columns_var.get())]),
                 squareWidth=float(square_width_var.get())
             )
 
