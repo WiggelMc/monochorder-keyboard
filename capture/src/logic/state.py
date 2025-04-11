@@ -183,7 +183,7 @@ class Project:
     def save(self):
         with open(os.path.join(PROJECT_DIR, self.name, OPTIONS_FILE), "w") as file:
             print(self.options.to_dict())
-            file.write(json.dumps(self.options.to_dict()))
+            file.write(json.dumps(self.options.to_dict(), indent=2))
 
 # def main():
 #     a = ProjectOptions()

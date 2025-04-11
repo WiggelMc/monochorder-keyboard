@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, asdict, fields
 import os
 
+OUT_DIR = "out"
+
 class TypeScriptSerializable(ABC):
     @abstractmethod
     def to_typescript(self) -> str:
@@ -50,66 +52,9 @@ class PositionOptions(TypeScriptSerializableDataclass):
     socket: SocketPositionOptions
     finger: FingerPositionOptions
 
-def main():
-    options = PositionOptions(
-        finger= FingerPositionOptions(
-            pinky= ElementPos(
-                neutralPos=Vector3(0,0,0),
-                pressedPos=Vector3(0,0,0),
-                lowerPos=Vector3(0,0,0)
-            ),
-            ringFinger= ElementPos(
-                neutralPos=Vector3(0,0,0),
-                pressedPos=Vector3(0,0,0),
-                lowerPos=Vector3(0,0,0)
-            ),
-            middleFinger= ElementPos(
-                neutralPos=Vector3(0,0,0),
-                pressedPos=Vector3(0,0,0),
-                lowerPos=Vector3(0,0,0)
-            ),
-            indexFinger= ElementPos(
-                neutralPos=Vector3(0,0,0),
-                pressedPos=Vector3(0,0,0),
-                lowerPos=Vector3(0,0,0)
-            ),
-            thumb= ElementPos(
-                neutralPos=Vector3(0,0,0),
-                pressedPos=Vector3(0,0,0),
-                lowerPos=Vector3(0,0,0)
-            ),
-            resetButton= ElementPos(
-                neutralPos=Vector3(0,0,0),
-                pressedPos=Vector3(0,0,0),
-                lowerPos=Vector3(0,0,0)
-            )
-        ),
-        socket=SocketPositionOptions(
-            topSocket= ElementPos(
-                neutralPos=Vector3(0,0,0),
-                pressedPos=Vector3(0,0,0),
-                lowerPos=Vector3(0,0,0)
-            ),
-            bottomSocket= ElementPos(
-                neutralPos=Vector3(0,0,0),
-                pressedPos=Vector3(0,0,0),
-                lowerPos=Vector3(0,0,0)
-            )
-        ),
-        plate= ElementPos(
-            neutralPos=Vector3(0,0,0),
-            pressedPos=Vector3(0,0,0),
-            lowerPos=Vector3(0,0,0)
-        )
-    )
+    def export(self, name: str):
+        if not os.path.exists(OUT_DIR):
+            os.makedirs(OUT_DIR)
 
-    out_dir = "out"
-
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-
-    with open(os.path.join(out_dir, "out.ts.txt"), "w") as file:
-        file.write(options.to_typescript())
-
-if __name__ == "__main__":
-    main()
+        with open(os.path.join(OUT_DIR, f"{name}.ts.txt"), "w") as file:
+            file.write(self.to_typescript())

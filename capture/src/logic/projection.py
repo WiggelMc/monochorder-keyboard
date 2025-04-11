@@ -103,7 +103,7 @@ def projectPoints(calibration: CalibrationOptions, positions: PixelPositionOptio
 
     R1, R2, P1, P2, Q, validPixROI1, validPixROI2 = cast(
         typ=tuple[MatLike, MatLike, MatLike, MatLike, MatLike, Rect, Rect],
-        val=cv2.stereoRectify(c.cameraMatrix1, c.distCoeffs1, c.cameraMatrix2, c.distCoeffs2, c.imageSize, c.R)
+        val=cv2.stereoRectify(c.cameraMatrix1, c.distCoeffs1, c.cameraMatrix2, c.distCoeffs2, c.imageSize, c.R, c.T)
     )
 
     outPointList = cast(
