@@ -50,7 +50,7 @@ def calibrate(patternSize: Size, squareWidth: float, image1: MatLike, image2: Ma
         val=cv2.calibrateCamera([objectPoints], [corners2], imageSize, cameraMatrix2, distCoeffs2)
     )
 
-    print("calibrated 1", retval)
+    print("calibrated 2", retval)
 
     retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cast(
         typ=tuple[float, MatLike, MatLike, MatLike, MatLike, MatLike, MatLike, MatLike, MatLike],
