@@ -1,6 +1,9 @@
+from enum import Enum
+from typing import cast
 import cv2
 import numpy as np
 
+from logic.camera import Camera
 from logic.marker import MARKER_DICT, Marker
 from cv2.typing import Size, MatLike, Point
 from PIL import Image
@@ -37,9 +40,82 @@ def place_marker(image: MatLike, marker: Marker, size: int, point: Point):
     cv2.putText(image, marker.display_name, (wo+x, ho+y+h+20), cv2.QT_FONT_NORMAL, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
 
 
+class Stage(Enum):
+    START = 0
+    PRE_CALIBRATE = 1
+    CALIBRATE = 2
+    RECORD = 3
+
+class CalibrationData:
+    pass
+
 def main():
     generate_charuco_image()
     generate_marker_image()
+
+    cam = Camera.list()[1].connect()
+    running = True
+    stage = Stage.START
+    calibration_data = None
+
+    has_frame1, frame1 = False, None
+
+    while running:
+        has_frame, frame = cam.capture.read()
+
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            running = False
+        elif key == ord('c'):
+            stage = Stage.CALIBRATE
+        elif key == ord('s'):
+            stage = Stage.START
+
+
+        match stage:
+            case Stage.START:
+                has_frame1, frame1 = has_frame, detect(frame)
+            case Stage.PRE_CALIBRATE:
+                if has_frame:
+                    has_frame1 = True
+                    frame1 = detect(frame)
+                    stage = Stage.CALIBRATE
+            case Stage.CALIBRATE:
+                ...
+            case Stage.RECORD:
+                has_frame1, frame1 = has_frame, frame
+
+        if has_frame1:
+            cv2.imshow("Window", frame1)
+
+
+
+def detect(image: MatLike):
+    params = cv2.aruco.DetectorParameters()
+    refine_params = cv2.aruco.RefineParameters()
+    detector = cv2.aruco.ArucoDetector(MARKER_DICT, params, refine_params)
+    markerCorners, markerIds, rejectedCandidates = detector.detectMarkers(image)
+    if (len(markerCorners) >= 1):
+        print(markerCorners[0].shape)
+        print(markerCorners[0])
+
+        object_points = np.array([[0,0,0],[0,1,0],[1,1,0],[1,0,0]], dtype=np.float64)
+        image_points = markerCorners[0][0]
+
+        print(object_points)
+        print(image_points)
+
+        # retval, rvec, tvec = cast(
+        #     typ=tuple[bool, MatLike, MatLike],
+        #     val=cv2.solvePnP(object_points, image_points, "TODO", "TODO")
+        # )
+
+    image_copy = image.copy()
+    cv2.aruco.drawDetectedMarkers(image_copy, markerCorners, markerIds)
+    return image_copy
+
+def calibrate(image: MatLike):
+    ...
 
 def generate_charuco_image():
     size: Size = (7, 5)
