@@ -1,4 +1,4 @@
-import { Keyboard } from "../model/keyboard.js"
+import { DefaultKeyboard } from "../keyboards/default/keyboard_default.js"
 import { Vector3 } from "../math/vector3.js"
 import { AbsoluteElementPos, FileOptions, FingerProperties, ModelOptions, PositionOptions, SocketProperties, convertPos } from "../model/options.js"
 import { DeepPartial } from "../types/partial.js"
@@ -9,6 +9,11 @@ const fileOptionOverrides: Partial<FileOptions> = {
 }
 
 // All Units are in millimeters and degrees
+
+function keyboard(fileOptions: FileOptions, modelOptions: ModelOptions) {
+
+    return new DefaultKeyboard(fileOptions, modelOptions)
+}
 
 const fingerDefault = {
     bevel: 10,
@@ -148,8 +153,8 @@ export function generate(fileOptions: FileOptions) {
     }
 
     const keyboards = [
-        new Keyboard(fullFileOptions, leftModelOptions),
-        new Keyboard(fullFileOptions, rightModelOptions)
+        keyboard(fullFileOptions, leftModelOptions),
+        keyboard(fullFileOptions, rightModelOptions)
     ]
 
     for (const keyboard of keyboards) {

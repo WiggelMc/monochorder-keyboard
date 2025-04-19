@@ -125,7 +125,7 @@ def calibrate(image: MatLike):
 
     detector = cv2.aruco.CharucoDetector(MARKER_DICT, charuco_params, params, refine_params)
     charucoCorners, charucoIds, markerCorners, markerIds = detector.detectBoard(image)
-    
+
 
     charuco_board.det
     charuco_board.matchImagePoints()
