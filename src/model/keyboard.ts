@@ -61,8 +61,8 @@ export class Keyboard {
             this.modelOptions.positions.socket.topSocket,
         ].flatMap((e) => [
             point(Color.white).translate(e.neutralPos),
-            point(Color.red).translate(e.pressedPos),
-            point(Color.blue).translate(e.lowerPos)
+            point(Color.red).translate(e.neutralPos.subtract(e.normal)),
+            point(Color.blue).translate(e.neutralPos.add(e.down))
         ])
 
         const obj2 = union(

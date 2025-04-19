@@ -38,10 +38,9 @@ class Plate {
     constructor(pos: ElementPos, width: number, height: number, depth: number) {
         this.center = pos.neutralPos
 
-        this.normal = Vector3.fromTo(pos.pressedPos, pos.neutralPos).normalize()
-        const nl = Vector3.fromTo(pos.neutralPos, pos.lowerPos)
-        this.down = nl.subtract(this.normal.scale(nl.dot(this.normal))).normalize()
-        this.right = this.normal.cross(this.down)
+        this.normal = pos.normal.normalize()
+        this.down = pos.down.normalize()
+        this.right = this.normal.cross(this.down).normalize()
 
         const scaled_right = this.right.normalize().scale(width / 2)
         const scaled_down = this.down.normalize().scale(height / 2)
