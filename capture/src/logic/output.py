@@ -41,23 +41,23 @@ class ElementPos(TypeScriptSerializableDataclass):
 
 @dataclass
 class FingerPositionOptions(TypeScriptSerializableDataclass):
-    pinky: ElementPos | None
-    ringFinger: ElementPos | None
-    middleFinger: ElementPos | None
-    indexFinger: ElementPos | None
-    thumb: ElementPos | None
-    resetButton: ElementPos | None
+    pinky: ElementPos | None = None
+    ringFinger: ElementPos | None = None
+    middleFinger: ElementPos | None = None
+    indexFinger: ElementPos | None = None
+    thumb: ElementPos | None = None
+    resetButton: ElementPos | None = None
 
 @dataclass
 class SocketPositionOptions(TypeScriptSerializableDataclass):
-    topSocket: ElementPos | None
-    bottomSocket: ElementPos | None
+    topSocket: ElementPos | None = None
+    bottomSocket: ElementPos | None = None
 
 @dataclass
 class PositionOptions(TypeScriptSerializableDataclass):
-    plate: ElementPos | None
-    socket: SocketPositionOptions | None
-    finger: FingerPositionOptions | None
+    plate: ElementPos | None = None
+    socket: SocketPositionOptions | None = None
+    finger: FingerPositionOptions | None = None
 
     def export(self, name: str):
         if not os.path.exists(OUT_DIR):
