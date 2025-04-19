@@ -115,13 +115,31 @@ def detect(image: MatLike):
     return image_copy
 
 def calibrate(image: MatLike):
-    ...
+    charuco_board = get_charuco_board()
+
+    object_points = charuco_board.getObjPoints()
+
+    charuco_params = cv2.aruco.CharucoParameters()
+    params = cv2.aruco.DetectorParameters()
+    refine_params = cv2.aruco.RefineParameters()
+
+    detector = cv2.aruco.CharucoDetector(MARKER_DICT, charuco_params, params, refine_params)
+    charucoCorners, charucoIds, markerCorners, markerIds = detector.detectBoard(image)
+    
+
+    charuco_board.det
+    charuco_board.matchImagePoints()
+
+
+def get_charuco_board():
+    size: Size = (7, 5)
+
+    return cv2.aruco.CharucoBoard(size=size, squareLength=1, markerLength=0.8, dictionary=MARKER_DICT)
 
 def generate_charuco_image():
-    size: Size = (7, 5)
+    charuco_board = get_charuco_board()
     margin = round(15 * a4_dpmm)
 
-    charuco_board = cv2.aruco.CharucoBoard(size=size, squareLength=1, markerLength=0.8, dictionary=MARKER_DICT)
     charuco_image = charuco_board.generateImage(outSize=a4_size, marginSize=margin)
 
     save_image("out/charuco.png", charuco_image, a4_dpi)
