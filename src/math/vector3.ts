@@ -65,6 +65,14 @@ export class Vector3 {
         )
     }
 
+    invert(): Vector3 {
+        return new Vector3(
+            -this.x,
+            -this.y,
+            -this.z
+        )
+    }
+
     normalize(): Vector3 {
         return this.scale(1 / this.magnitude())
     }
