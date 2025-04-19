@@ -36,8 +36,8 @@ class Vector3(TypeScriptSerializable):
 @dataclass
 class ElementPos(TypeScriptSerializableDataclass):
     neutralPos: Vector3
-    pressedPos: Vector3
-    lowerPos: Vector3
+    normal: Vector3
+    down: Vector3
 
 @dataclass
 class FingerPositionOptions(TypeScriptSerializableDataclass):
