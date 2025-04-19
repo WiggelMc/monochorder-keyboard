@@ -14,8 +14,15 @@ def indent(code: str) -> str:
 
 class TypeScriptSerializableDataclass(TypeScriptSerializable):
     def to_typescript(self) -> str:
-        code = ",\n".join([f"{field.name}: {getattr(self, field.name).to_typescript()}" for field in fields(self)])
-        return f"{{\n{indent(code)}\n}}"
+        fields = ((field.name, getattr(self, field.name)) for field in fields(self))
+        rendered_fields = ((k, v.to_typescript()) for k, v in fields if v is not None)
+
+        code = ",\n".join(f"{k}: {v.to_typescript()}" for k, v in rendered_fields if v)
+
+        if code:
+            return f"{{\n{indent(code)}\n}}"
+        else:
+            return ""
 
 @dataclass
 class Vector3(TypeScriptSerializable):
@@ -34,27 +41,29 @@ class ElementPos(TypeScriptSerializableDataclass):
 
 @dataclass
 class FingerPositionOptions(TypeScriptSerializableDataclass):
-    pinky: ElementPos
-    ringFinger: ElementPos
-    middleFinger: ElementPos
-    indexFinger: ElementPos
-    thumb: ElementPos
-    resetButton: ElementPos
+    pinky: ElementPos | None
+    ringFinger: ElementPos | None
+    middleFinger: ElementPos | None
+    indexFinger: ElementPos | None
+    thumb: ElementPos | None
+    resetButton: ElementPos | None
 
 @dataclass
 class SocketPositionOptions(TypeScriptSerializableDataclass):
-    topSocket: ElementPos
-    bottomSocket: ElementPos
+    topSocket: ElementPos | None
+    bottomSocket: ElementPos | None
 
 @dataclass
 class PositionOptions(TypeScriptSerializableDataclass):
-    plate: ElementPos
-    socket: SocketPositionOptions
-    finger: FingerPositionOptions
+    plate: ElementPos | None
+    socket: SocketPositionOptions | None
+    finger: FingerPositionOptions | None
 
     def export(self, name: str):
         if not os.path.exists(OUT_DIR):
             os.makedirs(OUT_DIR)
 
         with open(os.path.join(OUT_DIR, f"{name}.ts.txt"), "w") as file:
-            file.write(self.to_typescript())
+            obj = self.to_typescript() or "{}"
+            code = f"{obj} as const satisfies DeepPartial<PositionOptions, ElementPos>"
+            file.write(code)
