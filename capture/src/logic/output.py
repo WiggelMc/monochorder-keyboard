@@ -13,8 +13,8 @@ def indent(code: str) -> str:
 
 class TypeScriptSerializableDataclass(TypeScriptSerializable):
     def to_typescript(self) -> str:
-        fields = ((field.name, getattr(self, field.name)) for field in fields(self))
-        rendered_fields = ((k, v.to_typescript()) for k, v in fields if v is not None)
+        field_values = ((field.name, getattr(self, field.name)) for field in fields(self))
+        rendered_fields = ((k, v.to_typescript()) for k, v in field_values if v is not None)
 
         code = ",\n".join(f"{k}: {v.to_typescript()}" for k, v in rendered_fields if v)
 
