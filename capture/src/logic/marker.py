@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import Enum
 
 import cv2
@@ -23,3 +24,7 @@ class Marker(Enum):
     def __init__(self, display_name: str, marker_id: int):
         self.display_name = display_name
         self.marker_id = marker_id
+
+    @classmethod
+    def from_marker_id(cls, marker_id: int) -> Marker | None:
+        return next((m for m in cls if m.marker_id == marker_id), None)

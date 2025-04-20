@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, asdict, fields
-import os
+from dataclasses import dataclass, asdict, field, fields
 
-OUT_DIR = "out"
+from logic.marker import Marker
 
 class TypeScriptSerializable(ABC):
     @abstractmethod
@@ -56,14 +55,32 @@ class SocketPositionOptions(TypeScriptSerializableDataclass):
 @dataclass
 class PositionOptions(TypeScriptSerializableDataclass):
     plate: ElementPos | None = None
-    socket: SocketPositionOptions | None = None
-    finger: FingerPositionOptions | None = None
+    socket: SocketPositionOptions = field(default_factory=SocketPositionOptions)
+    finger: FingerPositionOptions = field(default_factory=FingerPositionOptions)
 
-    def export(self, name: str):
-        if not os.path.exists(OUT_DIR):
-            os.makedirs(OUT_DIR)
+    def set_position(self, marker: Marker, pos: ElementPos | None):
+        match marker:
+            case Marker.PLATE:
+                self.plate = pos
+            case Marker.TOP_SOCKET:
+                self.socket.topSocket = pos
+            case Marker.BOTTOM_SOCKET:
+                self.socket.bottomSocket = pos
+            case Marker.PINKY:
+                self.finger.pinky = pos
+            case Marker.RING_FINGER:
+                self.finger.ringFinger = pos
+            case Marker.MIDDLE_FINGER:
+                self.finger.middleFinger = pos
+            case Marker.INDEX_FINGER:
+                self.finger.indexFinger = pos
+            case Marker.THUMB:
+                self.finger.thumb = pos
+            case Marker.RESET_BUTTON:
+                self.finger.resetButton = pos
 
-        with open(os.path.join(OUT_DIR, f"{name}.ts.txt"), "w") as file:
+    def export(self, file_name: str):
+        with open(file_name, "w") as file:
             obj = self.to_typescript() or "{}"
             code = f"{obj} as const satisfies DeepPartial<PositionOptions, ElementPos>"
             file.write(code)

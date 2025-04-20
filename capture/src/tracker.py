@@ -1,9 +1,11 @@
+from dataclasses import dataclass
 from enum import Enum
+import os
 from typing import cast
 import cv2
 import numpy as np
 
-from logic.camera import Camera
+from logic.camera import Camera, ConnectedCamera
 from logic.marker import MARKER_DICT, Marker
 from cv2.typing import Size, MatLike, Point
 from PIL import Image
@@ -41,24 +43,192 @@ def place_marker(image: MatLike, marker: Marker, size: int, point: Point):
 
 
 class Stage(Enum):
-    START = 0
-    PRE_CALIBRATE = 1
-    CALIBRATE = 2
-    RECORD = 3
+    CALIBRATE = (0, "Calibration", ["Space: Snap", "d: Start Detection"])
+    CALIBRATE_SNAP = (1, "Calibration Image", ["Enter: Accept", "Backspace: Reject"])
+    DETECT = (2, "Detection", ["Space: Snap"])
+    DETECT_SNAP = (3, "Detection Image", ["Enter: Save", "Backspace: Discard"])
+
+    mode_id: int
+    mode_name: str
+    controls: list[str]
+
+    def __init__(self, mode_id: int, mode_name: str, controls: str):
+        self.mode_id = mode_id
+        self.mode_name = mode_name
+        self.controls = controls
+
+    @property
+    def description(self):
+        return f"{self.mode_name}: [{''.join(c + ', ' for c in self.controls)}r: Reset, q: Quit]"
 
 class CalibrationData:
     pass
 
+KEYCODE_SPACE = 0x20
+KEYCODE_ENTER = 0x0D
+KEYCODE_BACKSPACE = 0x08
+
+class Keymap:
+    accept = KEYCODE_ENTER
+    reject = KEYCODE_BACKSPACE
+    snap = KEYCODE_SPACE
+    detect = ord('d')
+    quit = ord('q')
+    reset = ord('r')
+
+
+WINDOW_NAME = "App Window"
+
+@dataclass
+class Config:
+    cam: Camera
+    name: str
+
+
+def get_test_config() -> Config:
+    return Config(
+        cam=Camera.list()[1],
+        name="Test"
+    )
+
+
+def get_config() -> Config:
+    cameras = Camera.list()
+    print("\nConnected Cameras:\n")
+    print("\n".join([f"{c.id: >4}: {c.name}" for c in cameras]))
+    print("\n")
+
+    cam: Camera | None = None
+
+    while cam is None:
+        try:
+            cam_input = input("Cam: ")
+            cam = next((c for c in cameras if c.id == int(cam_input)), None)
+            if cam is None:
+                raise IndexError("Invalid Camera Index")
+        except Exception as e:
+            print(e)
+
+    name = input("Name: ")
+
+    return Config(
+        cam=cam,
+        name=name
+    )
+
+def run_app():
+    running: bool = True
+    while running:
+        running = app()
+        cv2.destroyWindow(WINDOW_NAME)
+
+def app() -> bool:
+    config = get_test_config()
+    cam: ConnectedCamera = config.cam.connect()
+    running: bool = True
+    calibration_data: CalibrationData | None = None
+    stage: Stage = Stage.CALIBRATE
+
+    def set_stage(new_stage: Stage):
+        nonlocal stage
+        stage = new_stage
+        print()
+        print(new_stage.description)
+
+    set_stage(Stage.CALIBRATE)
+
+    has_cam_frame: bool = False
+    cam_frame: MatLike = []
+
+    while not has_cam_frame:
+        has_cam_frame, cam_frame = cam.capture.read()
+        cv2.waitKey(1)
+    
+    window_frame: MatLike = cam_frame
+
+    while running:
+        has_new_frame, new_frame = cam.capture.read()
+        if has_new_frame:
+            cam_frame = new_frame
+
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == Keymap.quit:
+            return False
+        elif key == Keymap.reset:
+            return True
+        
+        match stage:
+            case Stage.CALIBRATE:
+                window_frame = detect(cam_frame)
+                # detect image points
+
+                if key == Keymap.snap:
+                    # report image point feedback
+                    set_stage(Stage.CALIBRATE_SNAP)
+
+                elif key == Keymap.detect:
+                    # report calibration accuracy
+                    # report that calibration is finished
+                    set_stage(Stage.DETECT)
+
+            case Stage.CALIBRATE_SNAP:
+                if key == Keymap.accept:
+                    # run calibration on image (if possible)
+                    # report calibration accuracy
+                    set_stage(Stage.CALIBRATE)
+
+                elif key == Keymap.reject:
+                    # report rejection
+                    set_stage(Stage.CALIBRATE)
+
+            case Stage.DETECT:
+                window_frame = detect(cam_frame)
+                # detect image points
+
+                if key == Keymap.snap:
+                    # run 3d detection
+                    # report detection results
+                    set_stage(Stage.DETECT_SNAP)
+
+            case Stage.DETECT_SNAP:
+                if key == Keymap.accept:
+                    # save file
+                    # report filename and location
+                    set_stage(Stage.DETECT)
+
+
+                elif key == Keymap.reject:
+                    # report rejection
+                    set_stage(Stage.DETECT)
+
+        cv2.imshow(WINDOW_NAME, window_frame)
+
+        
+
+
+
+
+        
+
+
+
+
+OUT_DIR = "out"
+
 def main():
+    if not os.path.exists(OUT_DIR):
+        os.makedirs(OUT_DIR)
+
     generate_charuco_image()
     generate_marker_image()
 
     cam = Camera.list()[1].connect()
     running = True
-    stage = Stage.START
+    stage = Stage.CALIBRATE
     calibration_data = None
 
-    has_frame1, frame1 = False, None
+    has_loaded_frame, loaded_frame = False, None
 
     while running:
         has_frame, frame = cam.capture.read()
@@ -67,26 +237,45 @@ def main():
         if key == ord('q'):
             running = False
         elif key == ord('c'):
+            stage = Stage.CALIBRATE_SNAP
+        elif key == ord('r'):
             stage = Stage.CALIBRATE
-        elif key == ord('s'):
-            stage = Stage.START
+        elif key == ord('d'):
+            stage = Stage.DETECT
+        elif key == KEYCODE_SPACE:
+            match stage:
+                case Stage.CALIBRATE:
+                    stage = Stage.CALIBRATE_SNAP
+                case Stage.DETECT:
+                    stage = Stage.DETECT_SNAP
+        elif key == KEYCODE_ENTER:
+            match stage:
+                case Stage.CALIBRATE_IDLE:
+                    stage = Stage.CALIBRATE_SNAP
+                case Stage.DETECT_IDLE:
+                    stage = Stage.DETECT_SNAP
+
+
+
+        print(key)
 
 
         match stage:
-            case Stage.START:
-                has_frame1, frame1 = has_frame, detect(frame)
-            case Stage.PRE_CALIBRATE:
-                if has_frame:
-                    has_frame1 = True
-                    frame1 = detect(frame)
-                    stage = Stage.CALIBRATE
             case Stage.CALIBRATE:
+                if has_frame:
+                    has_loaded_frame, loaded_frame = has_frame, detect(frame)
+            case Stage.CALIBRATE_SNAP:
+                if has_frame:
+                    has_loaded_frame = True
+                    loaded_frame = detect(frame)
+                    stage = Stage.CALIBRATE
+            case Stage.DETECT:
                 ...
-            case Stage.RECORD:
-                has_frame1, frame1 = has_frame, frame
+            case Stage.DETECT_SNAP:
+                has_loaded_frame, loaded_frame = has_frame, frame
 
-        if has_frame1:
-            cv2.imshow("Window", frame1)
+        if has_loaded_frame:
+            cv2.imshow("Window", loaded_frame)
 
 
 
@@ -163,4 +352,4 @@ def generate_marker_image():
 
 
 if __name__ == "__main__":
-    main()
+    run_app()
