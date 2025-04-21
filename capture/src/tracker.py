@@ -10,6 +10,8 @@ from logic.marker import MARKER_DICT, Marker
 from cv2.typing import Size, MatLike, Point
 from PIL import Image
 
+from logic.opencv import ArucoDetector_DetectMarkers, CV_CalibrateCamera, CV_SolvePnP, CharucoBoard_MatchImagePoints, CharucoDetector_DetectBoard
+
 
 a4_size: Size = (3508, 2480)
 a4_dpi = 300
@@ -283,24 +285,21 @@ def detect(image: MatLike):
     params = cv2.aruco.DetectorParameters()
     refine_params = cv2.aruco.RefineParameters()
     detector = cv2.aruco.ArucoDetector(MARKER_DICT, params, refine_params)
-    markerCorners, markerIds, rejectedCandidates = detector.detectMarkers(image)
-    if (len(markerCorners) >= 1):
-        print(markerCorners[0].shape)
-        print(markerCorners[0])
+    r = ArucoDetector_DetectMarkers(*detector.detectMarkers(image))
+    if (len(r.markerCorners) >= 1):
+        print(r.markerCorners[0].shape)
+        print(r.markerCorners[0])
 
         object_points = np.array([[0,0,0],[0,1,0],[1,1,0],[1,0,0]], dtype=np.float64)
-        image_points = markerCorners[0][0]
+        image_points = r.markerCorners[0][0]
 
         print(object_points)
         print(image_points)
 
-        # retval, rvec, tvec = cast(
-        #     typ=tuple[bool, MatLike, MatLike],
-        #     val=cv2.solvePnP(object_points, image_points, "TODO", "TODO")
-        # )
+        # c = CV_SolvePnP(*cv2.solvePnP(object_points, image_points, "TODO", "TODO"))
 
     image_copy = image.copy()
-    cv2.aruco.drawDetectedMarkers(image_copy, markerCorners, markerIds)
+    cv2.aruco.drawDetectedMarkers(image_copy, r.markerCorners, r.markerIds)
     return image_copy
 
 def calibrate(image: MatLike):
@@ -313,11 +312,18 @@ def calibrate(image: MatLike):
     refine_params = cv2.aruco.RefineParameters()
 
     detector = cv2.aruco.CharucoDetector(MARKER_DICT, charuco_params, params, refine_params)
-    charucoCorners, charucoIds, markerCorners, markerIds = detector.detectBoard(image)
+    detectionResult = CharucoDetector_DetectBoard(*detector.detectBoard(image))
 
 
     charuco_board.det
-    charuco_board.matchImagePoints()
+    m = CharucoBoard_MatchImagePoints(*charuco_board.matchImagePoints(
+        detectionResult.charucoCorners,
+        detectionResult.charucoIds
+    ))
+
+    x = CV_CalibrateCamera(*cv2.calibrateCamera(
+        *"TODO"
+    ))
 
 
 def get_charuco_board():
