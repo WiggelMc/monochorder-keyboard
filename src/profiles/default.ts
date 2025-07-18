@@ -1,10 +1,12 @@
 import { cube } from "scad-ts"
 import { FileOptions } from "../model/options.js"
 import { Vector3 } from "../math/vector3.js"
-import { generateFile } from "../model/model_file.js";
+import { ScadFileWriter } from "../model/file_writer.js";
 
 export function generate(fileOptions: FileOptions) {
-    const obj = cube(new Vector3(25, 23, 2));
+    const fileWriter = new ScadFileWriter(fileOptions);
 
-    generateFile("test", fileOptions, obj, { $fn: 50 })
+    const obj = cube(new Vector3(25, 0.2, 2));
+
+    fileWriter.write("test", obj, { $fn: 50 })
 }
