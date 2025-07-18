@@ -15,7 +15,7 @@ import(`./profiles/${profileName}.js`).then(profile => {
 
     generate({
         outDirPath: outDirPath,
-        outFileNamePattern: (name, side) => `monochorder-${side.toLowerCase()}-${name}.scad`
+        outFileNamePattern: (name) => `monochorder-${name}.scad`
     })
 
     console.log("Successfully generated Model Files")
